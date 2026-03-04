@@ -156,12 +156,10 @@ export function dealerShowsAce(dealerUpCard: Card): boolean {
 
 /**
  * Format hand value for display
+ * Always shows the best playable value (no soft/hard split)
  */
 export function formatHandValue(value: HandValue): string {
   if (value.isBlackjack) return 'Blackjack!';
   if (value.isBust) return `Bust (${value.hard})`;
-  if (value.isSoft && value.soft !== value.hard) {
-    return `${value.hard}/${value.soft}`;
-  }
   return `${value.best}`;
 }

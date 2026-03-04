@@ -31,25 +31,30 @@ A progressive web app for training card counting skills (Hi-Lo system) with gami
 
 ## TODOs
 
-### Mobile UX (High Priority for Mobile Phase)
-- [ ] **Hand total input**: Current button grid (4-21 + Bust) is bad for mobile. Consider:
-  - Number pad (phone dialer style)
-  - Stepper (+/- buttons)
-  - Swipe/scroll picker
-  - Simple text input
+### Mobile UX (High Priority)
+- [ ] **Count input**: Current -7 to +7 button row doesn't scale for running count.
+  - **Preferred**: Number pad with +/- sign toggle (phone dialer style)
+  - Location: `SingleHandTrainer.tsx` in the `asking-count` state
+
+- [ ] **Hand total input**: Current button grid (4-21 + Bust) is bad for mobile.
+  - Consider same number pad approach
   - Location: `SingleHandTrainer.tsx` in the `asking-total` state
 
 ### Future Modules
 - [ ] Running Count trainer (string hands together)
 - [ ] Multi-position trainer (multiple hands at once)
+- [ ] Basic Strategy trainer (hit/stand/double/split decisions)
 - [ ] Full table simulation with betting decisions
 - [ ] Speed auto-progression (gets faster as accuracy improves)
 
 ### Polish
 - [ ] Hide debug controls (speed slider, scaffolding selector) in "real" training mode
 - [ ] Add Duolingo-style curriculum that unlocks progressively
-- [ ] Statistics persistence (Zustand + localStorage)
-- [ ] PWA setup for offline use
+
+### Completed
+- [x] Statistics persistence (Zustand + localStorage) - `useProgressStore.ts`
+- [x] PWA setup for offline use
+- [x] Session tracking with 20-hand sessions
 
 ## Tech Stack
 - React 18 + TypeScript

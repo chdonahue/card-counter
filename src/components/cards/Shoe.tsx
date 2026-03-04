@@ -1,3 +1,10 @@
+/**
+ * FUTURE USE: Visual shoe component showing remaining cards
+ * Will be used in Full Table simulation mode to display:
+ * - Cards remaining in shoe
+ * - Penetration indicator
+ * - Reshuffle warning
+ */
 import type { Shoe as ShoeType } from '../../core/card/Shoe';
 
 interface ShoeProps {

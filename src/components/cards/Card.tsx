@@ -15,7 +15,7 @@ export interface CardProps {
 const OUTLINE_COLORS = {
   positive: '#00ffff', // Cyan - good for player (+1)
   negative: '#ff00ff', // Magenta - bad for player (-1)
-  neutral: 'transparent', // No outline
+  neutral: '#6b7280',  // Gray - neutral (0)
 };
 
 // Outline width based on intensity
@@ -76,7 +76,7 @@ export function Card({
   // Determine outline color and width
   const outlineColor = overlay !== 'none' ? OUTLINE_COLORS[overlay] : 'transparent';
   const outlineWidth = overlayIntensity !== 'none' ? OUTLINE_WIDTH[overlayIntensity] : 0;
-  const hasOutline = overlay !== 'none' && overlay !== 'neutral' && outlineWidth > 0;
+  const hasOutline = overlay !== 'none' && outlineWidth > 0;
 
   return (
     <motion.div
