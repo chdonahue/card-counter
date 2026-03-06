@@ -2,6 +2,8 @@
  * Shared types and constants for training components
  */
 
+import { COLORS } from '../../../constants/colors';
+
 export type ScaffoldingLevel = 'bold' | 'subtle' | 'flash' | 'none';
 
 export const SCAFFOLDING_LABELS: Record<ScaffoldingLevel, string> = {
@@ -41,8 +43,8 @@ export function getOverlaySettings(
 export const BUTTON_STYLES = {
   primary: {
     padding: '12px 32px',
-    backgroundColor: '#d4af37',
-    color: '#0d1117',
+    backgroundColor: COLORS.action.primary,
+    color: COLORS.text.inverse,
     fontWeight: 600,
     borderRadius: 8,
     border: 'none',
@@ -52,7 +54,7 @@ export const BUTTON_STYLES = {
 
   secondary: {
     padding: '12px 32px',
-    backgroundColor: '#1e40af',
+    backgroundColor: COLORS.action.secondary,
     color: 'white',
     fontWeight: 600,
     borderRadius: 8,
@@ -63,8 +65,8 @@ export const BUTTON_STYLES = {
 
   tertiary: {
     padding: '12px 32px',
-    backgroundColor: '#374151',
-    color: '#e5e7eb',
+    backgroundColor: COLORS.action.tertiary,
+    color: COLORS.text.primary,
     fontWeight: 600,
     borderRadius: 8,
     border: 'none',
@@ -75,10 +77,10 @@ export const BUTTON_STYLES = {
   reset: {
     padding: '8px 20px',
     backgroundColor: 'transparent',
-    color: '#9ca3af',
+    color: COLORS.text.secondary,
     fontWeight: 500,
     borderRadius: 6,
-    border: '1px solid #374151',
+    border: `1px solid ${COLORS.background.border}`,
     cursor: 'pointer',
     fontSize: 14,
   } as React.CSSProperties,

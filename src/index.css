@@ -53,14 +53,5 @@ body {
     radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.1) 100%);
 }
 
-/* Card shadow */
-.card-shadow {
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    0 2px 4px -2px rgba(0, 0, 0, 0.2);
-}
-
-/* Gold accent glow */
-.gold-glow {
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-}
+/* REMOVED: .card-shadow - unused (inline styles handle card shadows)
+   REMOVED: .gold-glow - unused (inline styles handle button glows) */

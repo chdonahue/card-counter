@@ -90,6 +90,9 @@ export function dealCard(shoe: Shoe): { card: Card; updatedShoe: Shoe } | null {
 
 /**
  * Gets the number of decks remaining (for true count calculation)
+ *
+ * @deprecated Not currently used. Planned for True Count training module.
+ * TODO: Remove if not used by v2.0
  */
 export function getDecksRemaining(shoe: Shoe): number {
   return shoe.cards.length / 52;
@@ -97,6 +100,9 @@ export function getDecksRemaining(shoe: Shoe): number {
 
 /**
  * Reshuffles the shoe (collects all cards and shuffles)
+ *
+ * @deprecated Not currently used. Trainers create new shoes instead of reshuffling.
+ * TODO: Remove if not used by v2.0
  */
 export function reshuffleShoe(shoe: Shoe): Shoe {
   const allCards = [...shoe.cards, ...shoe.dealtCards];

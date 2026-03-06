@@ -7,13 +7,19 @@ import { createHand, addCardToHand, evaluateHand } from '../../core/blackjack';
 import { createShoe, dealCard, DEFAULT_SHOE_CONFIG } from '../../core/card/Shoe';
 import { HiLoSystem, calculateRunningCount } from '../../core/counting';
 import { useProgressStore, type SessionStats } from '../../stores/useProgressStore';
+import { useFlashMode } from '../../hooks/useFlashMode';
+import { COLORS } from '../../constants/colors';
 import {
   type ScaffoldingLevel,
-  SCAFFOLDING_LABELS,
   BUTTON_STYLES,
   getOverlaySettings,
   Legend,
   ProgressBar,
+  SpeedControl,
+  ScaffoldingControl,
+  ToggleControl,
+  TrainingSettingsPanel,
+  SessionCompleteStats,
 } from './shared';
 
 type TrainingState = 'idle' | 'dealing' | 'asking-count' | 'asking-total' | 'feedback' | 'session-complete';
@@ -37,9 +43,15 @@ export function SingleHandTrainer() {
   const [stats, setStats] = useState<TrainerStats>({ countCorrect: 0, totalCorrect: 0, handsCompleted: 0 });
   const [dealSpeed, setDealSpeed] = useState<number>(1000); // ms per card
   const [scaffolding, setScaffolding] = useState<ScaffoldingLevel>('bold');
-  const [flashingCardIndex, setFlashingCardIndex] = useState<number>(-1);
   const [askHandTotal, setAskHandTotal] = useState<boolean>(false);
   const [completedSession, setCompletedSession] = useState<SessionStats | null>(null);
+
+  // Flash mode hook - handles showing overlay briefly on newest card
+  const flashingCardIndex = useFlashMode({
+    scaffolding,
+    isActive: trainingState === 'dealing',
+    triggerValue: currentHand.cards.length,
+  });
 
   // Progress store for persistence
   const { startSession, recordHandComplete, endSession, totalHandsCounted, streakCurrent, streakBest } = useProgressStore();
@@ -88,22 +100,6 @@ export function SingleHandTrainer() {
     setSelectedTotalAnswer(null);
     setTrainingState('dealing');
   }, [startSession, scaffolding, dealSpeed, askHandTotal]);
-
-  // Flash mode: show overlay briefly on the newest card only
-  useEffect(() => {
-    if (scaffolding !== 'flash' || trainingState !== 'dealing') return;
-    if (currentHand.cards.length === 0) return;
-
-    // Flash the newest card (last index)
-    const newestIndex = currentHand.cards.length - 1;
-    setFlashingCardIndex(newestIndex);
-
-    const timer = setTimeout(() => {
-      setFlashingCardIndex(-1);
-    }, 400); // Flash duration
-
-    return () => clearTimeout(timer);
-  }, [currentHand.cards.length, scaffolding, trainingState]);
 
   // Auto-deal effect
   useEffect(() => {
@@ -215,7 +211,7 @@ export function SingleHandTrainer() {
       {trainingState !== 'idle' && trainingState !== 'session-complete' && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <ProgressBar current={stats.handsCompleted} target={SESSION_HANDS_TARGET} />
-          <div style={{ display: 'flex', gap: 24, fontSize: 14, color: '#9ca3af' }}>
+          <div style={{ display: 'flex', gap: 24, fontSize: 14, color: COLORS.text.secondary }}>
             <span>Count: {stats.countCorrect}/{stats.handsCompleted}</span>
             {askHandTotal && <span>Total: {stats.totalCorrect}/{stats.handsCompleted}</span>}
             {stats.handsCompleted > 0 && (
@@ -240,7 +236,7 @@ export function SingleHandTrainer() {
         {/* Idle state */}
         {trainingState === 'idle' && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#9ca3af', marginBottom: 16 }}>
+            <p style={{ color: COLORS.text.secondary, marginBottom: 16 }}>
               A hand will be dealt. Count the cards, then tell us the total.
             </p>
             <button
@@ -277,7 +273,7 @@ export function SingleHandTrainer() {
         {/* Asking hand total - show button grid */}
         {trainingState === 'asking-total' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <p style={{ color: '#e5e7eb', fontSize: 18, margin: 0 }}>
+            <p style={{ color: COLORS.text.primary, fontSize: 18, margin: 0 }}>
               What was the hand total?
             </p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', maxWidth: 320 }}>
@@ -288,12 +284,12 @@ export function SingleHandTrainer() {
                   style={{
                     width: 48,
                     height: 48,
-                    backgroundColor: value === 21 ? '#14532d' : '#1f2937',
-                    color: '#e5e7eb',
+                    backgroundColor: value === 21 ? COLORS.action.special : COLORS.background.card,
+                    color: COLORS.text.primary,
                     fontWeight: 600,
                     fontSize: 16,
                     borderRadius: 8,
-                    border: '2px solid #374151',
+                    border: `2px solid ${COLORS.background.border}`,
                     cursor: 'pointer',
                   }}
                 >
@@ -306,12 +302,12 @@ export function SingleHandTrainer() {
               style={{
                 width: 200,
                 height: 48,
-                backgroundColor: '#7f1d1d',
-                color: '#e5e7eb',
+                backgroundColor: COLORS.action.danger,
+                color: COLORS.text.primary,
                 fontWeight: 600,
                 fontSize: 16,
                 borderRadius: 8,
-                border: '2px solid #991b1b',
+                border: `2px solid ${COLORS.action.dangerBorder}`,
                 cursor: 'pointer',
               }}
             >
@@ -325,15 +321,15 @@ export function SingleHandTrainer() {
           <div style={{ textAlign: 'center' }}>
             {/* Count feedback */}
             {selectedCountAnswer === correctCount ? (
-              <p style={{ color: '#22c55e', fontSize: 24, fontWeight: 600, marginBottom: 8 }}>
+              <p style={{ color: COLORS.feedback.success, fontSize: 24, fontWeight: 600, marginBottom: 8 }}>
                 {askHandTotal ? 'Count: Correct!' : 'Correct!'}
               </p>
             ) : (
               <div style={{ marginBottom: 8 }}>
-                <p style={{ color: '#ef4444', fontSize: 24, fontWeight: 600, marginBottom: 4 }}>
+                <p style={{ color: COLORS.feedback.error, fontSize: 24, fontWeight: 600, marginBottom: 4 }}>
                   {askHandTotal ? 'Count: Incorrect' : 'Incorrect'}
                 </p>
-                <p style={{ color: '#9ca3af', fontSize: 16, margin: 0 }}>
+                <p style={{ color: COLORS.text.secondary, fontSize: 16, margin: 0 }}>
                   The count was {correctCount > 0 ? `+${correctCount}` : correctCount}
                 </p>
               </div>
@@ -342,15 +338,15 @@ export function SingleHandTrainer() {
             {/* Total feedback (if enabled) */}
             {askHandTotal && (
               selectedTotalAnswer === correctTotal || (selectedTotalAnswer === 0 && correctTotal > 21) ? (
-                <p style={{ color: '#22c55e', fontSize: 24, fontWeight: 600, marginBottom: 8 }}>
+                <p style={{ color: COLORS.feedback.success, fontSize: 24, fontWeight: 600, marginBottom: 8 }}>
                   Total: Correct!
                 </p>
               ) : (
                 <div style={{ marginBottom: 8 }}>
-                  <p style={{ color: '#ef4444', fontSize: 24, fontWeight: 600, marginBottom: 4 }}>
+                  <p style={{ color: COLORS.feedback.error, fontSize: 24, fontWeight: 600, marginBottom: 4 }}>
                     Total: Incorrect
                   </p>
-                  <p style={{ color: '#9ca3af', fontSize: 16, margin: 0 }}>
+                  <p style={{ color: COLORS.text.secondary, fontSize: 16, margin: 0 }}>
                     The hand was {correctTotal > 21 ? `Bust (${correctTotal})` : correctTotal}
                   </p>
                 </div>
@@ -376,138 +372,44 @@ export function SingleHandTrainer() {
 
         {/* Session complete state */}
         {trainingState === 'session-complete' && completedSession && (
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#d4af37', fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
-              Session Complete!
-            </p>
-
-            {/* Session stats */}
-            <div style={{
-              backgroundColor: '#1f2937',
-              borderRadius: 12,
-              padding: 24,
-              marginBottom: 24,
-              minWidth: 280,
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Hands:</span>
-                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>{completedSession.handsCompleted}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Count Accuracy:</span>
-                  <span style={{
-                    color: (completedSession.countCorrect / completedSession.countTotal) >= 0.8 ? '#22c55e' : '#ef4444',
-                    fontWeight: 600,
-                  }}>
-                    {Math.round((completedSession.countCorrect / completedSession.countTotal) * 100)}%
-                  </span>
-                </div>
-                {completedSession.config.askTotal && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#9ca3af' }}>Total Accuracy:</span>
-                    <span style={{ color: '#e5e7eb', fontWeight: 600 }}>
-                      {Math.round((completedSession.totalCorrect / completedSession.totalQuestions) * 100)}%
-                    </span>
-                  </div>
-                )}
-                <hr style={{ border: 'none', borderTop: '1px solid #374151', margin: '8px 0' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Current Streak:</span>
-                  <span style={{ color: '#d4af37', fontWeight: 600 }}>{streakCurrent}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Best Streak:</span>
-                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>{streakBest}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Total Hands (All Time):</span>
-                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>{totalHandsCounted}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button onClick={handleNewSession} style={BUTTON_STYLES.primary}>
-                New Session
-              </button>
-              <button onClick={handleReset} style={BUTTON_STYLES.tertiary}>
-                Change Settings
-              </button>
-            </div>
-          </div>
+          <SessionCompleteStats
+            stats={[
+              { label: 'Hands', value: completedSession.handsCompleted },
+              {
+                label: 'Count Accuracy',
+                value: `${Math.round((completedSession.countCorrect / completedSession.countTotal) * 100)}%`,
+                color: (completedSession.countCorrect / completedSession.countTotal) >= 0.8
+                  ? COLORS.feedback.success
+                  : COLORS.feedback.error,
+              },
+              ...(completedSession.config.askTotal ? [{
+                label: 'Total Accuracy',
+                value: `${Math.round((completedSession.totalCorrect / completedSession.totalQuestions) * 100)}%`,
+              }] : []),
+            ]}
+            globalStats={{
+              streakCurrent,
+              streakBest,
+              totalHandsCounted,
+            }}
+            onNewSession={handleNewSession}
+            onChangeSettings={handleReset}
+          />
         )}
       </div>
 
       {/* Settings - only in idle */}
       {trainingState === 'idle' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-          {/* Speed control */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ color: '#9ca3af', fontSize: 14, minWidth: 80 }}>Speed:</span>
-            <input
-              type="range"
-              min={300}
-              max={2000}
-              step={100}
-              value={dealSpeed}
-              onChange={e => setDealSpeed(Number(e.target.value))}
-              style={{ width: 150 }}
-            />
-            <span style={{ color: '#9ca3af', fontSize: 14, minWidth: 50 }}>
-              {(dealSpeed / 1000).toFixed(1)}s
-            </span>
-          </div>
-
-          {/* Scaffolding level */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ color: '#9ca3af', fontSize: 14, minWidth: 80 }}>Helpers:</span>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {(['bold', 'subtle', 'flash', 'none'] as ScaffoldingLevel[]).map(level => (
-                <button
-                  key={level}
-                  onClick={() => setScaffolding(level)}
-                  style={{
-                    padding: '6px 12px',
-                    backgroundColor: scaffolding === level ? '#d4af37' : '#1f2937',
-                    color: scaffolding === level ? '#0d1117' : '#9ca3af',
-                    fontWeight: 500,
-                    fontSize: 13,
-                    borderRadius: 6,
-                    border: scaffolding === level ? 'none' : '1px solid #374151',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {SCAFFOLDING_LABELS[level]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Ask hand total toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ color: '#9ca3af', fontSize: 14, minWidth: 80 }}>Ask Total:</span>
-            <button
-              onClick={() => setAskHandTotal(!askHandTotal)}
-              style={{
-                padding: '6px 16px',
-                backgroundColor: askHandTotal ? '#d4af37' : '#1f2937',
-                color: askHandTotal ? '#0d1117' : '#9ca3af',
-                fontWeight: 500,
-                fontSize: 13,
-                borderRadius: 6,
-                border: askHandTotal ? 'none' : '1px solid #374151',
-                cursor: 'pointer',
-              }}
-            >
-              {askHandTotal ? 'On' : 'Off'}
-            </button>
-            <span style={{ color: '#6b7280', fontSize: 12 }}>
-              (also ask for blackjack hand value)
-            </span>
-          </div>
-        </div>
+        <TrainingSettingsPanel>
+          <SpeedControl speed={dealSpeed} onChange={setDealSpeed} />
+          <ScaffoldingControl level={scaffolding} onChange={setScaffolding} />
+          <ToggleControl
+            label="Ask Total"
+            value={askHandTotal}
+            onChange={setAskHandTotal}
+            hint="also ask for blackjack hand value"
+          />
+        </TrainingSettingsPanel>
       )}
 
       {/* Reset button - visible during training */}

@@ -7,13 +7,18 @@ import { createHand, addCardToHand, evaluateHand } from '../../core/blackjack';
 import { createShoe, dealCard, DEFAULT_SHOE_CONFIG } from '../../core/card/Shoe';
 import { HiLoSystem, calculateRunningCount } from '../../core/counting';
 import { useProgressStore } from '../../stores/useProgressStore';
+import { useFlashMode } from '../../hooks/useFlashMode';
+import { COLORS } from '../../constants/colors';
 import {
   type ScaffoldingLevel,
-  SCAFFOLDING_LABELS,
   BUTTON_STYLES,
   getOverlaySettings,
   Legend,
   ProgressBar,
+  SpeedControl,
+  ScaffoldingControl,
+  TrainingSettingsPanel,
+  SessionCompleteStats,
 } from './shared';
 
 type TrainingState = 'idle' | 'dealing' | 'between-hands' | 'asking-count' | 'feedback' | 'session-complete';
@@ -30,7 +35,13 @@ export function RunningCountTrainer() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [dealSpeed, setDealSpeed] = useState<number>(1000);
   const [scaffolding, setScaffolding] = useState<ScaffoldingLevel>('bold');
-  const [flashingCardIndex, setFlashingCardIndex] = useState<number>(-1);
+
+  // Flash mode hook
+  const flashingCardIndex = useFlashMode({
+    scaffolding,
+    isActive: trainingState === 'dealing',
+    triggerValue: currentHand.cards.length,
+  });
 
   // Running count tracking
   const [handsCompleted, setHandsCompleted] = useState<number>(0);
@@ -95,21 +106,6 @@ export function RunningCountTrainer() {
     setCurrentHand(createHand());
     setTrainingState('dealing');
   }, []);
-
-  // Flash effect for new cards
-  useEffect(() => {
-    if (scaffolding !== 'flash' || trainingState !== 'dealing') return;
-    if (currentHand.cards.length === 0) return;
-
-    const newestIndex = currentHand.cards.length - 1;
-    setFlashingCardIndex(newestIndex);
-
-    const timer = setTimeout(() => {
-      setFlashingCardIndex(-1);
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [currentHand.cards.length, scaffolding, trainingState]);
 
   // Auto-deal effect
   useEffect(() => {
@@ -220,7 +216,7 @@ export function RunningCountTrainer() {
       {trainingState !== 'idle' && trainingState !== 'session-complete' && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <ProgressBar current={handsCompleted} target={SESSION_HANDS_TARGET} />
-          <div style={{ display: 'flex', gap: 24, fontSize: 14, color: '#9ca3af' }}>
+          <div style={{ display: 'flex', gap: 24, fontSize: 14, color: COLORS.text.secondary }}>
             <span>Checks: {checksCorrect}/{totalChecks}</span>
             <span>Since last check: {handsSinceLastCheck} hands</span>
             {totalChecks > 0 && (
@@ -242,7 +238,7 @@ export function RunningCountTrainer() {
         {/* Idle state */}
         {trainingState === 'idle' && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#9ca3af', marginBottom: 16 }}>
+            <p style={{ color: COLORS.text.secondary, marginBottom: 16 }}>
               Track the running count across multiple hands.<br />
               You'll be checked randomly every {VERIFICATION_MIN_HANDS}-{VERIFICATION_MAX_HANDS} hands.
             </p>
@@ -268,14 +264,14 @@ export function RunningCountTrainer() {
         {/* Between hands - brief transition */}
         {trainingState === 'between-hands' && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#6b7280', fontSize: 14 }}>Next hand...</p>
+            <p style={{ color: COLORS.text.muted, fontSize: 14 }}>Next hand...</p>
           </div>
         )}
 
         {/* Asking for count */}
         {trainingState === 'asking-count' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-            <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>
+            <p style={{ color: COLORS.text.muted, fontSize: 14, margin: 0 }}>
               ({handsSinceLastCheck} hand{handsSinceLastCheck !== 1 ? 's' : ''} since last check)
             </p>
             <CountChoices
@@ -290,15 +286,15 @@ export function RunningCountTrainer() {
         {trainingState === 'feedback' && (
           <div style={{ textAlign: 'center' }}>
             {selectedAnswer === runningCount ? (
-              <p style={{ color: '#22c55e', fontSize: 24, fontWeight: 600, marginBottom: 8 }}>
+              <p style={{ color: COLORS.feedback.success, fontSize: 24, fontWeight: 600, marginBottom: 8 }}>
                 Correct!
               </p>
             ) : (
               <div style={{ marginBottom: 8 }}>
-                <p style={{ color: '#ef4444', fontSize: 24, fontWeight: 600, marginBottom: 4 }}>
+                <p style={{ color: COLORS.feedback.error, fontSize: 24, fontWeight: 600, marginBottom: 4 }}>
                   Incorrect
                 </p>
-                <p style={{ color: '#9ca3af', fontSize: 16 }}>
+                <p style={{ color: COLORS.text.secondary, fontSize: 16 }}>
                   The running count was {runningCount > 0 ? `+${runningCount}` : runningCount}
                 </p>
               </div>
@@ -315,120 +311,47 @@ export function RunningCountTrainer() {
 
         {/* Session complete */}
         {trainingState === 'session-complete' && (
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#d4af37', fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
-              Session Complete!
-            </p>
-
-            {/* Final answer feedback */}
+          <>
+            {/* Final answer feedback (shown before stats card) */}
             {selectedAnswer !== null && (
               <p style={{
-                color: selectedAnswer === runningCount ? '#22c55e' : '#ef4444',
+                color: selectedAnswer === runningCount ? COLORS.feedback.success : COLORS.feedback.error,
                 fontSize: 16,
-                marginBottom: 16,
+                marginBottom: 8,
               }}>
                 Final count: {selectedAnswer === runningCount ? 'Correct!' : `Incorrect (was ${runningCount > 0 ? `+${runningCount}` : runningCount})`}
               </p>
             )}
-
-            <div style={{
-              backgroundColor: '#1f2937',
-              borderRadius: 12,
-              padding: 24,
-              marginBottom: 24,
-              minWidth: 280,
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Hands Dealt:</span>
-                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>{handsCompleted}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Verifications:</span>
-                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>{totalChecks}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Accuracy:</span>
-                  <span style={{
-                    color: totalChecks > 0 && (checksCorrect / totalChecks) >= 0.8 ? '#22c55e' : '#ef4444',
-                    fontWeight: 600,
-                  }}>
-                    {totalChecks > 0 ? Math.round((checksCorrect / totalChecks) * 100) : 0}%
-                  </span>
-                </div>
-                <hr style={{ border: 'none', borderTop: '1px solid #374151', margin: '8px 0' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Current Streak:</span>
-                  <span style={{ color: '#d4af37', fontWeight: 600 }}>{streakCurrent}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Best Streak:</span>
-                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>{streakBest}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Total Hands (All Time):</span>
-                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>{totalHandsCounted}</span>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button onClick={handleNewSession} style={BUTTON_STYLES.primary}>
-                New Session
-              </button>
-              <button onClick={handleReset} style={BUTTON_STYLES.tertiary}>
-                Change Settings
-              </button>
-            </div>
-          </div>
+            <SessionCompleteStats
+              stats={[
+                { label: 'Hands Dealt', value: handsCompleted },
+                { label: 'Verifications', value: totalChecks },
+                {
+                  label: 'Accuracy',
+                  value: `${totalChecks > 0 ? Math.round((checksCorrect / totalChecks) * 100) : 0}%`,
+                  color: totalChecks > 0 && (checksCorrect / totalChecks) >= 0.8
+                    ? COLORS.feedback.success
+                    : COLORS.feedback.error,
+                },
+              ]}
+              globalStats={{
+                streakCurrent,
+                streakBest,
+                totalHandsCounted,
+              }}
+              onNewSession={handleNewSession}
+              onChangeSettings={handleReset}
+            />
+          </>
         )}
       </div>
 
       {/* Settings - only in idle */}
       {trainingState === 'idle' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-          {/* Speed control */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ color: '#9ca3af', fontSize: 14, minWidth: 80 }}>Speed:</span>
-            <input
-              type="range"
-              min={300}
-              max={2000}
-              step={100}
-              value={dealSpeed}
-              onChange={e => setDealSpeed(Number(e.target.value))}
-              style={{ width: 150 }}
-            />
-            <span style={{ color: '#9ca3af', fontSize: 14, minWidth: 50 }}>
-              {(dealSpeed / 1000).toFixed(1)}s
-            </span>
-          </div>
-
-          {/* Scaffolding level */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ color: '#9ca3af', fontSize: 14, minWidth: 80 }}>Helpers:</span>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {(['bold', 'subtle', 'flash', 'none'] as ScaffoldingLevel[]).map(level => (
-                <button
-                  key={level}
-                  onClick={() => setScaffolding(level)}
-                  style={{
-                    padding: '6px 12px',
-                    backgroundColor: scaffolding === level ? '#d4af37' : '#1f2937',
-                    color: scaffolding === level ? '#0d1117' : '#9ca3af',
-                    fontWeight: 500,
-                    fontSize: 13,
-                    borderRadius: 6,
-                    border: scaffolding === level ? 'none' : '1px solid #374151',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {SCAFFOLDING_LABELS[level]}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <TrainingSettingsPanel>
+          <SpeedControl speed={dealSpeed} onChange={setDealSpeed} />
+          <ScaffoldingControl level={scaffolding} onChange={setScaffolding} />
+        </TrainingSettingsPanel>
       )}
 
       {/* Reset button */}
