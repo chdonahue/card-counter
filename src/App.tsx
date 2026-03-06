@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { SingleHandTrainer, RunningCountTrainer, MultiPositionTrainer } from './components/training';
+import { SingleHandTrainer, RunningCountTrainer, MultiPositionTrainer, BasicStrategyTrainer } from './components/training';
 import './App.css';
 
-type TrainingModule = 'single-hand' | 'running-count' | 'multi-position';
+type TrainingModule = 'single-hand' | 'running-count' | 'multi-position' | 'basic-strategy';
 
 const MODULE_INFO: Record<TrainingModule, { title: string; description: string }> = {
   'single-hand': {
@@ -16,6 +16,10 @@ const MODULE_INFO: Record<TrainingModule, { title: string; description: string }
   'multi-position': {
     title: 'Multi-Position',
     description: 'Full table with dealer',
+  },
+  'basic-strategy': {
+    title: 'Basic Strategy',
+    description: 'Learn optimal play decisions',
   },
 };
 
@@ -84,6 +88,7 @@ function App() {
             {activeModule === 'single-hand' && <SingleHandTrainer />}
             {activeModule === 'running-count' && <RunningCountTrainer />}
             {activeModule === 'multi-position' && <MultiPositionTrainer />}
+            {activeModule === 'basic-strategy' && <BasicStrategyTrainer />}
           </div>
         </div>
       </main>

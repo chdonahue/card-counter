@@ -14,6 +14,8 @@ export interface HandProps {
   showValue?: boolean;
   size?: 'sm' | 'md' | 'lg';
   label?: string;
+  reservedSlots?: number; // Reserve space for this many cards (prevents layout shift)
+  hideEmptyState?: boolean; // Don't show "Empty" placeholder when no cards
 }
 
 // Card overlap amount (how much each card overlaps the previous)
@@ -39,15 +41,19 @@ export function Hand({
   showValue = true,
   size = 'md',
   label,
+  reservedSlots,
+  hideEmptyState = false,
 }: HandProps) {
   const overlap = OVERLAP[size];
   const cardWidth = CARD_WIDTHS[size];
   const value = evaluateHand(hand.cards);
 
   // Calculate total width of the hand
-  const handWidth = hand.cards.length > 0
-    ? cardWidth + (hand.cards.length - 1) * (cardWidth - overlap)
-    : cardWidth;
+  // If reservedSlots is specified, use whichever is larger
+  const actualSlots = hand.cards.length > 0 ? hand.cards.length : 1;
+  const minSlots = reservedSlots ?? actualSlots;
+  const slots = Math.max(actualSlots, minSlots);
+  const handWidth = cardWidth + (slots - 1) * (cardWidth - overlap);
 
   return (
     <div
@@ -108,7 +114,7 @@ export function Hand({
         </AnimatePresence>
 
         {/* Empty state */}
-        {hand.cards.length === 0 && (
+        {hand.cards.length === 0 && !hideEmptyState && (
           <div
             style={{
               width: cardWidth,
