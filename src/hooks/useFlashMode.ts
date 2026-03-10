@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import type { ScaffoldingLevel } from '../components/training/shared';
+import { TIMING } from '../constants/timing';
 
 interface UseFlashModeOptions {
   /** Current scaffolding level */
@@ -15,7 +16,7 @@ interface UseFlashModeOptions {
   isActive: boolean;
   /** Value that changes when a new card is dealt (e.g., cards.length) */
   triggerValue: number;
-  /** How long to show the flash in milliseconds */
+  /** How long to show the flash in milliseconds (defaults to TIMING.FLASH_OVERLAY_DURATION) */
   flashDuration?: number;
 }
 
@@ -37,7 +38,7 @@ export function useFlashMode({
   scaffolding,
   isActive,
   triggerValue,
-  flashDuration = 400,
+  flashDuration = TIMING.FLASH_OVERLAY_DURATION,
 }: UseFlashModeOptions): number {
   const [flashingIndex, setFlashingIndex] = useState(-1);
 

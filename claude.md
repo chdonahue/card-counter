@@ -1,71 +1,61 @@
-# Card Counter Pro - Project Context
+# Card Counter Pro
 
-## Overview
-A progressive web app for training card counting skills (Hi-Lo system) with gamified learning and scaffold removal.
+A progressive web app for training card counting skills (Hi-Lo system) with gamified learning and scaffolding removal.
 
-## Current State
-- Single Hand Count Training module is functional
-- Scaffolding levels: Bold, Subtle, Flash, None
-- Optional "Ask Hand Total" mode for advanced training
-- Cards use cyan/magenta outlines with black edges for count indicators
+## Design Principles
 
-## Design Decisions
+### Training Philosophy
+- **Scaffolding removal**: Start with visual aids, progressively remove them
+- **Chunking**: Master small skills before combining them
+- **Multiple choice over free input**: Lower friction, faster feedback loops
+- **Speed progression**: Accuracy unlocks faster card speeds
 
-### Colors
-- **Cyan (#00ffff)** = +1 cards (2-6) - good for player
-- **Magenta (#ff00ff)** = -1 cards (10-A) - bad for player
-- **No outline** = 0 cards (7-9)
-- Black inner/outer edges on color outlines for pop against dark background
+### Hi-Lo Counting System
+- **+1**: Cards 2-6 (low cards removed = good for player)
+- **-1**: Cards 10-A (high cards removed = bad for player)
+- **0**: Cards 7-9 (neutral)
 
-### Training Progression (Planned)
-1. **Single Hand Count** (current) - count one hand at a time, chunking skill
-2. **Running Count** - multiple hands, track cumulative count
-3. **Multi-Position** - 2-3 hands dealt simultaneously
-4. **Full Table** - dealer + players, realistic pace, bet sizing
+### Visual Language
+- **Cyan (#00ffff)**: +1 cards - outlined with black edges
+- **Magenta (#ff00ff)**: -1 cards - outlined with black edges
+- **No outline**: 0 cards
+- **Gold (#d4af37)**: Accent/brand color
+
+### Scaffolding Levels
+1. **Bold**: Full-strength color outlines while dealing
+2. **Subtle**: Dimmed outlines
+3. **Flash**: Brief flash then disappears (memory challenge)
+4. **None**: No visual hints (pure counting)
 
 ### Difficulty Axes
-- **Speed**: 2s → 1s → 0.5s per card
-- **Scaffolding**: Bold → Subtle → Flash → None
-- **Verification**: Every hand → every N hands → end of shoe
-- **Cognitive load**: Count only → Count + Hand total → Count + Total + Decisions
+- Speed: 2s → 1s → 0.5s per card
+- Scaffolding: Bold → Subtle → Flash → None
+- Verification frequency: Every hand → periodic → end of shoe
+- Cognitive load: Count only → +Hand total → +Decisions
 
-## TODOs
+## Code Quality Rules
 
-### Mobile UX (High Priority)
-- [ ] **Count input**: Current -7 to +7 button row doesn't scale for running count.
-  - **Preferred**: Number pad with +/- sign toggle (phone dialer style)
-  - Location: `SingleHandTrainer.tsx` in the `asking-count` state
+### Never Duplicate Component Logic
+- **Extend, don't bypass**: If a component doesn't support a needed feature (e.g., `Card` needs a no-animation mode), add a prop to the component. Never copy-paste the component's internals inline.
+- **Single source of truth**: Visual constants (colors, sizes, outline widths) must be defined once and imported. Never hardcode values that exist in a component.
+- **Shared components exist for a reason**: `/src/components/training/shared/` and `/src/components/ui/` contain reusable pieces. Use them.
 
-- [ ] **Hand total input**: Current button grid (4-21 + Bust) is bad for mobile.
-  - Consider same number pad approach
-  - Location: `SingleHandTrainer.tsx` in the `asking-total` state
-
-### Future Modules
-- [ ] Running Count trainer (string hands together)
-- [ ] Multi-position trainer (multiple hands at once)
-- [ ] Basic Strategy trainer (hit/stand/double/split decisions)
-- [ ] Full table simulation with betting decisions
-- [ ] Speed auto-progression (gets faster as accuracy improves)
-
-### Polish
-- [ ] Hide debug controls (speed slider, scaffolding selector) in "real" training mode
-- [ ] Add Duolingo-style curriculum that unlocks progressively
-
-### Completed
-- [x] Statistics persistence (Zustand + localStorage) - `useProgressStore.ts`
-- [x] PWA setup for offline use
-- [x] Session tracking with 20-hand sessions
+### Before Writing New Code
+1. Check if an existing component can be extended
+2. Check if shared utilities already handle the logic
+3. If you need to modify behavior, add a prop—don't fork the code
 
 ## Tech Stack
 - React 18 + TypeScript
-- Vite 6
-- Motion (Framer Motion) for animations
-- Tailwind CSS (configured but using inline styles currently)
-- Zustand for state (planned)
-- LemonSqueezy for payments (planned)
+- Vite
+- Framer Motion for animations
+- Tailwind CSS
+- Zustand + localStorage for state persistence
 
-## File Structure Notes
-- `/src/core/` - Framework-agnostic logic (reusable)
-- `/src/components/` - React components
+## File Structure
+- `/src/core/` - Framework-agnostic logic (card, counting, blackjack)
 - `/src/components/training/` - Training module components
-- `/public/cards/` - SVG card assets (saulspatz/SVGCards)
+- `/src/components/training/shared/` - Reusable training UI
+- `/src/components/ui/` - Generic UI components
+- `/src/stores/` - Zustand stores
+- `/public/cards/` - SVG card assets

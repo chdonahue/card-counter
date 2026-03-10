@@ -1,10 +1,14 @@
 import { useState } from 'react';
-import { SingleHandTrainer, RunningCountTrainer, MultiPositionTrainer, BasicStrategyTrainer } from './components/training';
+import { SingleHandTrainer, RunningCountTrainer, MultiPositionTrainer, BasicStrategyTrainer, FlashCountTrainer } from './components/training';
 import './App.css';
 
-type TrainingModule = 'single-hand' | 'running-count' | 'multi-position' | 'basic-strategy';
+type TrainingModule = 'flash-count' | 'single-hand' | 'running-count' | 'multi-position' | 'basic-strategy';
 
 const MODULE_INFO: Record<TrainingModule, { title: string; description: string }> = {
+  'flash-count': {
+    title: 'Flash Count',
+    description: 'Rapid card-to-count association',
+  },
   'single-hand': {
     title: 'Single Hand',
     description: 'Count one hand at a time',
@@ -24,7 +28,7 @@ const MODULE_INFO: Record<TrainingModule, { title: string; description: string }
 };
 
 function App() {
-  const [activeModule, setActiveModule] = useState<TrainingModule>('single-hand');
+  const [activeModule, setActiveModule] = useState<TrainingModule>('flash-count');
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0d1117' }}>
@@ -85,6 +89,7 @@ function App() {
               {MODULE_INFO[activeModule].description}
             </p>
 
+            {activeModule === 'flash-count' && <FlashCountTrainer />}
             {activeModule === 'single-hand' && <SingleHandTrainer />}
             {activeModule === 'running-count' && <RunningCountTrainer />}
             {activeModule === 'multi-position' && <MultiPositionTrainer />}

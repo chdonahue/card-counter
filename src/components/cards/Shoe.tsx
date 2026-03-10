@@ -1,17 +1,19 @@
-/**
- * FUTURE USE: Visual shoe component showing remaining cards
- * Will be used in Full Table simulation mode to display:
- * - Cards remaining in shoe
- * - Penetration indicator
- * - Reshuffle warning
- */
 import type { Shoe as ShoeType } from '../../core/card/Shoe';
+import { getDecksRemaining } from '../../core/card/Shoe';
 
 interface ShoeProps {
   shoe: ShoeType;
+  /** Show the dashed red lines marking deck boundaries */
+  showDeckMarkers?: boolean;
+  /** Show the numeric decks remaining (e.g., "4.2 left") */
+  showDecksRemaining?: boolean;
 }
 
-export function Shoe({ shoe }: ShoeProps) {
+export function Shoe({
+  shoe,
+  showDeckMarkers = true,
+  showDecksRemaining = true,
+}: ShoeProps) {
   const totalCards = shoe.config.deckCount * 52;
   const remainingCards = shoe.cards.length;
   const percentRemaining = remainingCards / totalCards;
@@ -101,7 +103,7 @@ export function Shoe({ shoe }: ShoeProps) {
         </div>
 
         {/* Deck marker lines - one for each deck boundary */}
-        {Array.from({ length: deckCount }).map((_, i) => (
+        {showDeckMarkers && Array.from({ length: deckCount }).map((_, i) => (
           <div
             key={i}
             style={{
@@ -132,8 +134,15 @@ export function Shoe({ shoe }: ShoeProps) {
         />
       </div>
 
-      {/* Label */}
-      <span style={{ color: '#9ca3af', fontSize: 12 }}>Shoe</span>
+      {/* Labels */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        <span style={{ color: '#9ca3af', fontSize: 12 }}>{deckCount}-deck shoe</span>
+        {showDecksRemaining && (
+          <span style={{ color: '#6b7280', fontSize: 11 }}>
+            {getDecksRemaining(shoe).toFixed(1)} left
+          </span>
+        )}
+      </div>
     </div>
   );
 }

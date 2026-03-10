@@ -27,9 +27,7 @@ export function calculateRunningCount(
 
 /**
  * Calculate the true count (running count / decks remaining)
- *
- * @deprecated Not currently used. Planned for True Count training module.
- * TODO: Remove if not used by v2.0
+ * Used in FlashCountTrainer's true count mode
  */
 export function calculateTrueCount(
   runningCount: number,

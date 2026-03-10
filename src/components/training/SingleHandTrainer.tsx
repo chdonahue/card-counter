@@ -9,6 +9,7 @@ import { HiLoSystem, calculateRunningCount } from '../../core/counting';
 import { useProgressStore, type SessionStats } from '../../stores/useProgressStore';
 import { useFlashMode } from '../../hooks/useFlashMode';
 import { COLORS } from '../../constants/colors';
+import { TIMING } from '../../constants/timing';
 import {
   type ScaffoldingLevel,
   BUTTON_STYLES,
@@ -119,7 +120,7 @@ export function SingleHandTrainer() {
     // Deal next card
     const timer = setTimeout(() => {
       dealOneCard();
-    }, currentHand.cards.length === 0 ? 100 : dealSpeed);
+    }, currentHand.cards.length === 0 ? TIMING.FIRST_CARD_DELAY : dealSpeed);
 
     return () => clearTimeout(timer);
   }, [trainingState, shouldStopDealing, currentHand.cards.length, dealSpeed, dealOneCard, handCount, handValue.best]);
@@ -261,7 +262,7 @@ export function SingleHandTrainer() {
           />
         )}
 
-        {/* Asking count - hand hidden, show number pad */}
+        {/* Asking count - hand hidden, show choices */}
         {trainingState === 'asking-count' && (
           <CountChoices
             correctAnswer={correctCount}

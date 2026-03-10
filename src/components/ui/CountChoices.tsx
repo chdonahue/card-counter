@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { COLORS } from '../../constants/colors';
 
 interface CountChoicesProps {
   correctAnswer: number;
@@ -24,7 +25,7 @@ export function CountChoices({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-      <p style={{ color: '#e5e7eb', fontSize: 18, margin: 0 }}>{label}</p>
+      <p style={{ color: COLORS.text.primary, fontSize: 18, margin: 0 }}>{label}</p>
 
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
         {choices.map(value => (
@@ -34,12 +35,12 @@ export function CountChoices({
             style={{
               width: 56,
               height: 56,
-              backgroundColor: '#1f2937',
-              color: '#e5e7eb',
+              backgroundColor: COLORS.background.card,
+              color: COLORS.text.primary,
               fontWeight: 600,
               fontSize: 18,
               borderRadius: 10,
-              border: '2px solid #374151',
+              border: `2px solid ${COLORS.background.border}`,
               cursor: 'pointer',
             }}
           >

@@ -148,10 +148,7 @@ export function canDoubleDown(hand: BlackjackHand): boolean {
 
 /**
  * Check if hand should be offered insurance (dealer shows ace)
- * This is a dealer-side check, included for completeness.
- *
- * @deprecated Not currently used. Planned for insurance feature in Full Table mode.
- * TODO: Remove if not used by v2.0
+ * Planned for Full Table mode with complete betting decisions
  */
 export function dealerShowsAce(dealerUpCard: Card): boolean {
   return dealerUpCard.rank === 'A';

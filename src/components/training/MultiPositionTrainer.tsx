@@ -8,6 +8,7 @@ import { createHand, addCardToHand, evaluateHand } from '../../core/blackjack';
 import { createShoe, dealCard, DEFAULT_SHOE_CONFIG } from '../../core/card/Shoe';
 import { HiLoSystem } from '../../core/counting';
 import { useProgressStore } from '../../stores/useProgressStore';
+import { TIMING } from '../../constants/timing';
 import {
   type ScaffoldingLevel,
   SCAFFOLDING_LABELS,
@@ -23,7 +24,7 @@ const MAX_PLAYERS = 7;
 const MIN_PLAYERS = 1;
 
 // Timing multipliers (relative to base dealSpeed)
-const TIMING = {
+const DEAL_MULTIPLIERS = {
   cardDeal: 1,           // Base timing for dealing each card
   pauseAfterDeal: 2,     // Pause after initial deal before playing
   pauseBetweenHands: 1.5, // Pause between each player's turn
@@ -209,7 +210,7 @@ export function MultiPositionTrainer() {
 
     const timer = setTimeout(() => {
       setFlashingPosition(-1);
-    }, 400);
+    }, TIMING.FLASH_OVERLAY_DURATION);
 
     return () => clearTimeout(timer);
   }, [playerHands, dealerHand.cards.length, scaffolding, trainingState, dealingState.currentPosition]);
@@ -222,9 +223,9 @@ export function MultiPositionTrainer() {
 
     // Calculate timing based on phase
     let timing = dealSpeed;
-    if (phase === 'pause-after-deal') timing = dealSpeed * TIMING.pauseAfterDeal;
-    else if (phase === 'pause-between-hands') timing = dealSpeed * TIMING.pauseBetweenHands;
-    else if (phase === 'dealer-flip') timing = dealSpeed * TIMING.dealerFlip;
+    if (phase === 'pause-after-deal') timing = dealSpeed * DEAL_MULTIPLIERS.pauseAfterDeal;
+    else if (phase === 'pause-between-hands') timing = dealSpeed * DEAL_MULTIPLIERS.pauseBetweenHands;
+    else if (phase === 'dealer-flip') timing = dealSpeed * DEAL_MULTIPLIERS.dealerFlip;
 
     const timer = setTimeout(() => {
       // Initial dealing rounds

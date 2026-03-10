@@ -9,6 +9,7 @@ import { HiLoSystem, calculateRunningCount } from '../../core/counting';
 import { useProgressStore } from '../../stores/useProgressStore';
 import { useFlashMode } from '../../hooks/useFlashMode';
 import { COLORS } from '../../constants/colors';
+import { TIMING } from '../../constants/timing';
 import {
   type ScaffoldingLevel,
   BUTTON_STYLES,
@@ -156,7 +157,7 @@ export function RunningCountTrainer() {
 
     const timer = setTimeout(() => {
       startNextHand();
-    }, 800); // Brief pause between hands
+    }, TIMING.BETWEEN_HANDS_PAUSE);
 
     return () => clearTimeout(timer);
   }, [trainingState, startNextHand]);
